@@ -1,17 +1,19 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "type" : "commonjs",
+  "type": "commonjs",
   "main": "src/main.ts",
   "scripts": {
-    "dev" : "tsc watch src/main.ts",
-    "build" : "tsc",
-    "start" : "npm run build && node dist/main.js"
+    "dev": "tsc watch src/main.ts",
+    "build": "tsc",
+    "start": "npm run build && node dist/main.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@prisma/adapter-pg": "^7.4.0",
+    "@prisma/client": "^7.4.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
