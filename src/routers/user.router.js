@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var express_1 = require("express");
+var user_controllers_1 = require("../controllers/user.controllers");
+var auth_middleware_1 = require("../middlewares/auth.middleware");
+var uploud_middleware_1 = require("../middlewares/uploud.middleware");
+var authGuard_1 = require("../middlewares/authGuard");
+var userRouter = (0, express_1.Router)();
+userRouter.get("/profile", auth_middleware_1.authMiddleware, authGuard_1.authGuard, user_controllers_1.userController.profile);
+userRouter.patch("/profile", auth_middleware_1.authMiddleware, authGuard_1.authGuard, uploud_middleware_1.uploud.single("profileImage"), user_controllers_1.userController.updateProfile);
+userRouter.patch("/email", auth_middleware_1.authMiddleware, authGuard_1.authGuard, user_controllers_1.userController.updateEmail);
+userRouter.patch("/password", auth_middleware_1.authMiddleware, authGuard_1.authGuard, user_controllers_1.userController.updatePassword);
+exports.default = userRouter;

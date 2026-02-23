@@ -1,0 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var express_1 = require("express");
+var auth_controllers_1 = require("@/controllers/auth.controllers");
+var authRouter = (0, express_1.Router)();
+authRouter.post("/register/user", auth_controllers_1.authController.registerUser);
+authRouter.post("/register/tenant", auth_controllers_1.authController.registerTenant);
+authRouter.post("/login", auth_controllers_1.authController.login);
+authRouter.post("/social", auth_controllers_1.authController.socialAuth);
+authRouter.post("/veridy/resend", auth_controllers_1.authController.resendVerification);
+authRouter.post("/verify", auth_controllers_1.authController.verifyEmailSetPassword);
+authRouter.post("/reset-password", auth_controllers_1.authController.requestResetPassword);
+authRouter.post("/reset-password/confirm", auth_controllers_1.authController.confirmResetPassword);
+exports.default = authRouter;
