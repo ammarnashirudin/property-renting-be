@@ -3,6 +3,7 @@
     "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
+    "typeRoots": ["./src/types","./node_modules/@types"],
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
@@ -28,7 +29,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    "**/*.mts",
+    "src" 
   ],
   "exclude": ["node_modules"]
 }
