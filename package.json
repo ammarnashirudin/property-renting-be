@@ -4,7 +4,7 @@
   "type": "commonjs",
   "main": "src/main.ts",
   "scripts": {
-    "dev": "tsc watch src/main.ts",
+    "dev": "tsx watch src/main.ts",
     "build": "tsc",
     "start": "npm run build && node dist/main.js"
   },
@@ -39,6 +39,7 @@
     "@types/pg": "^8.16.0",
     "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
 }
