@@ -1,4 +1,4 @@
-import { User } from "@/generated/prisman";
+import { User } from "../generated/prisman";
 
 declare global {
   namespace Express {
