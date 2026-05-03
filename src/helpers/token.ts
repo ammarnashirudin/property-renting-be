@@ -1,5 +1,5 @@
 import Jwt,{ Secret, SignOptions } from "jsonwebtoken";
-import { SECRET_KEY } from "@/configs/env.config";
+import { SECRET_KEY } from "../configs/env.config";
 import crypto from "crypto";
 
 export function generateToken(
