@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { roomManagementService } from "../services/roomManagement.service";
-import { createCustomError } from "@/utils/customError";
+import { createCustomError } from "../utils/customError";
 export const roomManagementController = {
   createRoom: async (req: Request, res: Response, next: NextFunction) => {
     try {

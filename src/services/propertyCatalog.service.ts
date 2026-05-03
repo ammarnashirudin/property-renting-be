@@ -1,5 +1,15 @@
 import { propertyCatalogRepository } from "../repositories/propertyCatalog.repository";
 
+
+type PropertyItem = {
+  id: number;
+  name: string;
+  address: string;
+  image: string;
+  category: unknown;
+  lowestPrice: number | null;
+};
+
 export const propertyCatalogService = {
   async list(query: {
     page?: number;
@@ -11,39 +21,35 @@ export const propertyCatalogService = {
     checkIn?: string;
     checkOut?: string;
     latitude?: number;
-    longitude?: number; 
+    longitude?: number;
   }) {
     const page = query.page || 1;
     const limit = query.limit || 10;
     const skip = (page - 1) * limit;
+
     const checkIn = query.checkIn ? new Date(query.checkIn) : null;
     const checkOut = query.checkOut ? new Date(query.checkOut) : null;
+
     const today = new Date();
     const targetDate = checkIn ?? today;
 
-
- 
-    const where: any = {};
+    const where: Record<string, unknown> = {};
 
     if (query.search) {
-      where.name = {
+      where["name"] = {
         contains: query.search,
         mode: "insensitive",
       };
     }
 
     if (query.categoryId) {
-      where.categoryId = query.categoryId;
+      where["categoryId"] = query.categoryId;
     }
 
-
-
-
     if (checkIn && checkOut) {
-      where.rooms = {
+      where["rooms"] = {
         some: {
           AND: [
-
             {
               orders: {
                 none: {
@@ -52,7 +58,6 @@ export const propertyCatalogService = {
                 },
               },
             },
-      
             {
               availabilities: {
                 none: {
@@ -69,7 +74,6 @@ export const propertyCatalogService = {
       };
     }
 
-
     const properties = await propertyCatalogRepository.findMany({
       where,
       skip,
@@ -78,31 +82,32 @@ export const propertyCatalogService = {
         query.sortBy === "price"
           ? undefined
           : { name: query.sortOrder || "asc" },
-      latitude : query.latitude,
-      longitude : query.longitude,
+      latitude: query.latitude,
+      longitude: query.longitude,
     });
 
-    const mapped = properties.map((p: any) => {
+    /**
+     * Mapping + hitung harga terendah
+     */
+    const mapped: PropertyItem[] = properties.map((p: any) => {
       const prices: number[] = [];
 
       p.rooms.forEach((room: any) => {
-     
         const isAvailable = room.availabilities.some(
           (a: any) =>
             a.isAvailable &&
-            new Date(a.date).toDateString() === targetDate.toDateString()
-
+            new Date(a.date).toDateString() ===
+              targetDate.toDateString()
         );
 
         if (!isAvailable) return;
 
+        let price: number = room.basePrice;
 
-        let price = room.basePrice;
-
-    
         const peak = room.peakRates?.find(
-          (p: any) => targetDate >= p.startDate && targetDate <= p.endDate
-
+          (peakItem: any) =>
+            targetDate >= peakItem.startDate &&
+            targetDate <= peakItem.endDate
         );
 
         if (peak) {
@@ -125,15 +130,16 @@ export const propertyCatalogService = {
       };
     });
 
- 
+    /**
+     * Sorting by price (manual)
+     */
     if (query.sortBy === "price") {
-      mapped.sort((a, b) =>
+      mapped.sort((a: PropertyItem, b: PropertyItem) =>
         (query.sortOrder || "asc") === "asc"
           ? (a.lowestPrice ?? 0) - (b.lowestPrice ?? 0)
           : (b.lowestPrice ?? 0) - (a.lowestPrice ?? 0)
       );
     }
-
 
     const total = await propertyCatalogRepository.count(where);
 
@@ -150,9 +156,11 @@ export const propertyCatalogService = {
 
   async detail(propertyId: number) {
     const property = await propertyCatalogRepository.findById(propertyId);
+
     if (!property) {
       throw new Error("Property tidak ditemukan");
     }
+
     return property;
   },
 };
