@@ -1,8 +1,8 @@
-import { userRepository } from "@/repositories/user.repository";
-import { createCustomError } from "@/utils/customError";
+import { userRepository } from "../repositories/user.repository";
+import { createCustomError } from "../utils/customError";
 import { AuthService } from "./auth.service";
 import { compareSync, genSaltSync, hashSync } from "bcrypt";
-import { cloudinaryUpload, cloudinaryRemove } from "@/utils/cloudinary";
+import { cloudinaryUpload, cloudinaryRemove } from "../utils/cloudinary";
 
 function validateImage(file: Express.Multer.File){
     const allowed = ["image/jpeg", "image/png", "image/gif"];

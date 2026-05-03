@@ -1,6 +1,6 @@
 import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import {SECRET_KEY} from "@/configs/env.config";
+import {SECRET_KEY} from "../configs/env.config";
 import { createCustomError } from "../utils/customError";
 
 export type JwtPayloadUser = {

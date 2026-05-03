@@ -1,14 +1,14 @@
 import { genSaltSync, hashSync, compareSync } from "bcrypt";
-import { userRepository } from "@/repositories/user.repository";
-import { emailTokenRepository } from "@/repositories/emailToken.repository";
-import { passwordResetTokenRepository } from "@/repositories/passwordResetToken.repositoy";
-import { generateToken, generateRandomToken } from "@/helpers/token";
-import { sendMail } from "@/helpers/mailer";
-import { APP_BASE_URL } from "@/configs/env.config";
-import { createCustomError } from "@/utils/customError";
+import { userRepository } from "../repositories/user.repository";
+import { emailTokenRepository } from "../repositories/emailToken.repository";
+import { passwordResetTokenRepository } from "../repositories/passwordResetToken.repositoy";
+import { generateToken, generateRandomToken } from "../helpers/token";
+import { sendMail } from "../helpers/mailer";
+import { APP_BASE_URL } from "../configs/env.config";
+import { createCustomError } from "../utils/customError";
 import { OAuth2Client } from "google-auth-library";
-import { expiresAt } from "@/helpers/token";
-import { tenantRepository } from "@/repositories/tenant.repository";
+import { expiresAt } from "../helpers/token";
+import { tenantRepository } from "../repositories/tenant.repository";
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
