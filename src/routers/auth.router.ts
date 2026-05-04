@@ -9,7 +9,7 @@ authRouter.post("/register/tenant", authController.registerTenant);
 authRouter.post("/login", authController.login);
 authRouter.post("/social", authController.socialAuth);
 
-authRouter.post("/veriry/resend", authController.resendVerification);
+authRouter.post("/verify/resend", authController.resendVerification);
 authRouter.post("/verify", authController.verifyEmailSetPassword);
 
 authRouter.post("/reset-password", authController.requestResetPassword);
