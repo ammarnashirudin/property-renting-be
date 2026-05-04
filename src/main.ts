@@ -22,7 +22,7 @@ app.use(express.json());
 
 // Routers
 app.use("/auth", authRouter);
-app.use("/user", userRouter);
+app.use("/users", userRouter);
 
 app.use("/category", categoryRouter);
 app.use("/catalog", propertyCatalogRouter);
