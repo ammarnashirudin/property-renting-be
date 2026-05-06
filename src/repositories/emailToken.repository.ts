@@ -15,6 +15,7 @@ export const emailTokenRepository = {
         return prisma.emailToken.findFirst({
             where:{
                 token,
+                used: false,
                 expiresAt:{
                     gt:new Date(),                    
                 },
