@@ -1,5 +1,5 @@
 import prisma from "../lib/prisma";
-import { create } from "node:domain";
+
 
 export const emailTokenRepository = {
     create(data:{
