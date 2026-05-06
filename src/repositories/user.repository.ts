@@ -37,4 +37,15 @@ export const userRepository = {
             data,
         });
     },
+
+    deleteUser(date: Date){
+        return prisma.user.deleteMany({
+            where:{
+                isVerified: false,
+                password: null,
+                provider: "EMAIL",
+                createdAt: {lt: date},
+            }
+        })
+    }
 }
