@@ -104,7 +104,7 @@ export const AuthService = {
     async verifyEmailAndSetPassword(body :{token: string, password: string}){
         const tokenData = await emailTokenRepository.findValidToken(body.token);
         if(!tokenData) throw createCustomError(400, "Invalid or expired token");
-        if(!tokenData.used) throw createCustomError(404, "Token already used");
+        if(tokenData.used) {throw createCustomError(404, "Token already used")};
         if(!tokenData.expiresAt || tokenData.expiresAt < new Date())
             throw createCustomError(400, "Token expired");
 
