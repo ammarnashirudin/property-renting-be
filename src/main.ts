@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import errorMiddleware from "./middlewares/errorMiddlware";
+import { startCleanupJob } from "./middlewares/cleanup";
 
 import authRouter from "./routers/auth.router";
 import userRouter from "./routers/user.router";
@@ -39,3 +40,5 @@ app.use(errorMiddleware);
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+
+startCleanupJob();
