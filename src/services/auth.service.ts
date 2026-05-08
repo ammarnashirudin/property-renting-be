@@ -8,37 +8,58 @@ import { APP_BASE_URL } from "../configs/env.config";
 import { createCustomError } from "../utils/customError";
 import { OAuth2Client } from "google-auth-library";
 import { expiresAt } from "../helpers/token";
-import { tenantRepository } from "../repositories/tenant.repository";
+import prisma from "../lib/prisma";
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const AuthService = {
     async RegisterUser(body:{name: string, email: string}){
-        const exist = await userRepository.findByEmail(body.email);
-        if(exist) throw createCustomError(400, "Email already exists");
 
-        const user = await userRepository.createUser({
-            role: "USER",
-            name: body.name,
-            email: body.email,
-            provider: "EMAIL",
-        });
+        const exist = await userRepository.findByEmail(body.email);
+
+        if(exist){
+            throw createCustomError(400, "Email already exists");
+        }
 
         const token = generateRandomToken();
-       
-        await emailTokenRepository.create({
-            userId: user.id,
-            token,
-            expiresAt: expiresAt(),
-        })
-        
-        await sendMail(user.email, "Verification Email & Set Password", "Registration",{
-            name: user.name,
-            email: user.email,
-            verifyUrl: `${APP_BASE_URL}/verify-email?token=${token}`,
+
+        const result = await prisma.$transaction(async (tx) => {
+
+            const user = await tx.user.create({
+                data:{
+                    role: "USER",
+                    name: body.name,
+                    email: body.email,
+                    provider: "EMAIL",
+                },
+            });
+
+            await tx.emailToken.create({
+                data:{
+                    userId: user.id,
+                    token,
+                    expiresAt: expiresAt(),
+                },
+            });
+
+            return user;
         });
 
-        return {message: "Registration successful. Please check your email to verify your account and set your password."};
+        await sendMail(
+            result.email,
+            "Verification Email & Set Password",
+            "Registration",
+            {
+                name: result.name,
+                email: result.email,
+                verifyUrl: `${APP_BASE_URL}/verify-email?token=${token}`,
+            }
+        );
+
+        return {
+            message:
+                "Registration successful. Please check your email to verify your account and set your password.",
+        };
     },
 
     async RegisterTenant(body:{
@@ -48,36 +69,57 @@ export const AuthService = {
         phoneNumber: string;
     }){
         const exist = await userRepository.findByEmail(body.email);
-        if(exist) throw createCustomError(400, "Email alreadu exists");
 
-        const user = await userRepository.createUser({
-            role: "TENANT",
-            name: body.name,
-            email: body.email,
-            provider: "EMAIL",
-        });
-
-        await tenantRepository.createTenant({
-            userId: user.id,
-            companyName: body.companyName,
-            phoneNumber: body.phoneNumber,
-        });
+        if(exist){
+            throw createCustomError(400, "Email already exists");
+        }
 
         const token = generateRandomToken();
 
-        await emailTokenRepository.create({
-            userId: user.id,
-            token,
-            expiresAt: expiresAt(),
+        const result = await prisma.$transaction(async (tx) => {
+            const user = await tx.user.create({
+                data:{
+                    role: "TENANT",
+                    name: body.name,
+                    email: body.email,
+                    provider: "EMAIL",
+                },
+            });
+
+            await tx.tenant.create({
+                data:{
+                    userId: user.id,
+                    companyName: body.companyName,
+                    phoneNumber: body.phoneNumber,
+                },
+            });
+
+            await tx.emailToken.create({
+                data:{
+                    userId: user.id,
+                    token,
+                    expiresAt: expiresAt(),
+                },
+            });
+
+            return user;
         });
 
-        await sendMail(user.email, "Verification Email & Set Password", "Registration",{
-            name: user.name,
-            email: user.email,
-            verifyUrl: `${APP_BASE_URL}/verify-email?token=${token}`,
-        });
+        await sendMail(
+            result.email,
+            "Verification Email & Set Password",
+            "Registration",
+            {
+                name: result.name,
+                email: result.email,
+                verifyUrl: `${APP_BASE_URL}/verify-email?token=${token}`,
+            }
+        );
 
-        return {message: "Registration Tenant successful. Please check your email to verify your account and set your password."};
+        return {
+            message:
+                "Registration Tenant successful. Please check your email to verify your account and set your password.",
+        };
     },
 
     async sendVerificationByUserId(userId: number){
