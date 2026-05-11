@@ -20,7 +20,7 @@ propertyManagementRouter.post(
   authMiddleware,
   authGuard,
   roleMiddleware(["TENANT"]),
-  uploud.array("image", 5),
+  uploud.array("images", 5),
   propertyManagementController.create
 );
 
@@ -29,7 +29,7 @@ propertyManagementRouter.patch(
   authMiddleware,
   authGuard,
   roleMiddleware(["TENANT"]),
-  uploud.array("image", 5),
+  uploud.array("images", 5),
   propertyManagementController.update
 );
 
