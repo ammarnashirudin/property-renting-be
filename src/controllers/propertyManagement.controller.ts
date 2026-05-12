@@ -28,7 +28,7 @@ export const propertyManagementController = {
       const result = await propertyManagementService.create(
         req.user.id,
         req.body,
-        req.file
+        req.files
       );
       res.status(201).json({ message: "OK", data: result });
     } catch (err) {
@@ -42,7 +42,7 @@ export const propertyManagementController = {
         Number(req.params.id),
         req.user.id,
         req.body,
-        req.file
+        req.files
       );
       res.status(200).json({ message: "OK", data: result });
     } catch (err) {

@@ -3,14 +3,18 @@ import { createCustomError } from "../utils/customError";
 import { cloudinaryRemove, cloudinaryUpload } from "../utils/cloudinary";
 
 export const propertyManagementService = {
-  create: async (tenantId: number, payload: any, file?: Express.Multer.File) => {
+  create: async (
+    tenantId: number, 
+    payload: any, 
+    files?: Express.Multer.File[]
+  ) => {
     if (!payload.name) throw createCustomError(400, "Name wajib diisi");
     if (!payload.categoryId) throw createCustomError(400, "Category wajib diisi");
     if (!payload.description) throw createCustomError(400, "Description wajib diisi");
     if (!payload.address) throw createCustomError(400, "Address wajib diisi");
-    if (!file) throw createCustomError(400, "Picture wajib diupload");
+    if (!files || files.length === 0) throw createCustomError(400, "Picture wajib diupload");
 
-    const upload = await cloudinaryUpload(file, "properties");
+    const upload = await cloudinaryUpload(files[0], "properties");
 
     return propertyManagementRepository.create({
       tenantId,
