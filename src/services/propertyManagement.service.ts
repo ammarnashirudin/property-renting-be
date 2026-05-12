@@ -1,6 +1,7 @@
 import { propertyManagementRepository } from "../repositories/propertyManagement.repository";
 import { createCustomError } from "../utils/customError";
 import { cloudinaryRemove, cloudinaryUpload } from "../utils/cloudinary";
+import { geocodeAddress } from "../utils/geocode";
 
 export const propertyManagementService = {
   create: async (
@@ -15,6 +16,7 @@ export const propertyManagementService = {
     if (!files || files.length === 0) throw createCustomError(400, "Picture wajib diupload");
 
     const upload = await cloudinaryUpload(files[0], "properties");
+    const cordinate = await geocodeAddress(payload.address);
 
     return propertyManagementRepository.create({
       tenantId,
@@ -23,6 +25,8 @@ export const propertyManagementService = {
       description: payload.description,
       address: payload.address,
       image: upload.secure_url,
+      latitude : cordinate.lat,
+      longitude: cordinate.lng,
     });
   },
 
