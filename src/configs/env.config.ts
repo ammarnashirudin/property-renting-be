@@ -9,6 +9,7 @@ const GMAIL_EMAIL = process.env.GMAIL_EMAIL || "";
 const GMAIL_APP_PASS = process.env.GMAIL_APP_PASS || "";
 const APP_BASE_URL = process.env.APP_BASE_URL || "";
 const DATABASE_POOL_URL = process.env.DATABASE_POOL_URL || "";
+const OPENCAGE_API_KEY = process.env.OPENCAGE_API_KEY || "";
 
 export {
     PORT,
@@ -22,4 +23,5 @@ export {
     GMAIL_EMAIL,
     APP_BASE_URL,
     DATABASE_POOL_URL,
+    OPENCAGE_API_KEY,
 }
