@@ -38,7 +38,7 @@ export const propertyCatalogService = {
     if (query.search) {
       where["name"] = {
         contains: query.search,
-        mode: "insensitive",
+        // mode: "insensitive",
       };
     }
 
@@ -80,24 +80,21 @@ export const propertyCatalogService = {
       take: limit,
       orderBy:
         query.sortBy === "price"
-          ? undefined
+          ? {}
           : { name: query.sortOrder || "asc" },
       latitude: query.latitude,
       longitude: query.longitude,
     });
 
-    /**
-     * Mapping + hitung harga terendah
-     */
+
     const mapped: PropertyItem[] = properties.map((p: any) => {
       const prices: number[] = [];
 
       p.rooms.forEach((room: any) => {
         const isAvailable = room.availabilities.some(
           (a: any) =>
-            a.isAvailable &&
-            new Date(a.date).toDateString() ===
-              targetDate.toDateString()
+            a.date &&
+            new Date(a.date).toDateString() === targetDate.toDateString()
         );
 
         if (!isAvailable) return;
@@ -106,6 +103,8 @@ export const propertyCatalogService = {
 
         const peak = room.peakRates?.find(
           (peakItem: any) =>
+            peakItem.startDate &&
+            peakItem.endDate &&
             targetDate >= peakItem.startDate &&
             targetDate <= peakItem.endDate
         );
@@ -130,9 +129,7 @@ export const propertyCatalogService = {
       };
     });
 
-    /**
-     * Sorting by price (manual)
-     */
+
     if (query.sortBy === "price") {
       mapped.sort((a: PropertyItem, b: PropertyItem) =>
         (query.sortOrder || "asc") === "asc"

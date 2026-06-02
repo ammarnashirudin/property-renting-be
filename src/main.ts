@@ -25,7 +25,7 @@ app.use("/auth", authRouter);
 app.use("/users", userRouter);
 
 app.use("/category", categoryRouter);
-app.use("/catalog", propertyCatalogRouter);
+app.use("/properties", propertyCatalogRouter);
 
 app.use("/tenant/properties", propertyManagementRouter);
 app.use("/tenant/rooms", roomManagementRouter);
