@@ -19,6 +19,7 @@ export const propertyCatalogController = {
 
       res.status(200).json({ message: "OK", ...result });
     } catch (err) {
+      console.error(err);
       next(err);
     }
   },
@@ -28,6 +29,7 @@ export const propertyCatalogController = {
       const result = await propertyCatalogService.detail(Number(req.params.id));
       res.status(200).json({ message: "OK", data: result });
     } catch (err) {
+      console.error(err);
       next(err);
     }
   },
