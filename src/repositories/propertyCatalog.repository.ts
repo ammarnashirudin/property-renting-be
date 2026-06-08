@@ -1,4 +1,3 @@
-import { Query } from "pg";
 import prisma from "../lib/prisma";
 
 export const propertyCatalogRepository = {
@@ -17,9 +16,8 @@ export const propertyCatalogRepository = {
       };
     }
 
-    console.log(Query);
-    console.log(where);
-    console.log(orderBy);
+    console.log("WHERE =",where);
+    console.log("ORDER BY =",orderBy);
 
     return prisma.property.findMany({
       where,
