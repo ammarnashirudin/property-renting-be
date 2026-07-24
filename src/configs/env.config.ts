@@ -10,6 +10,7 @@ const GMAIL_APP_PASS = process.env.GMAIL_APP_PASS || "";
 const APP_BASE_URL = process.env.APP_BASE_URL || "";
 const DATABASE_POOL_URL = process.env.DATABASE_POOL_URL || "";
 const OPENCAGE_API_KEY = process.env.OPENCAGE_API_KEY || "";
+const PAYMENT_GATEWAY_WEBHOOK_SECRET = process.env.PAYMENT_GATEWAY_WEBHOOK_SECRET || "";
 
 export {
     PORT,
@@ -24,4 +25,5 @@ export {
     APP_BASE_URL,
     DATABASE_POOL_URL,
     OPENCAGE_API_KEY,
+    PAYMENT_GATEWAY_WEBHOOK_SECRET,
 }
