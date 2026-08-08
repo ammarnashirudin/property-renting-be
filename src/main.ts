@@ -10,6 +10,7 @@ import propertyManagementRouter from "./routers/propertyManagement.router";
 import roomManagementRouter from "./routers/roomManagement.router";
 import propertyCatalogRouter from "./routers/propertyCatalog.router";
 import locationRouter from "./routers/location.router";
+import { startOrderExpirationScheduler } from "./utils/orderExpirationScheduler";
 
 import { PORT } from "./configs/env.config";
 
@@ -38,5 +39,6 @@ app.use(errorMiddleware);
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+    startOrderExpirationScheduler();
 });
 

@@ -1,5 +1,5 @@
 import { ORDER_STATUS, PAYMENT_STATUS } from "../generated/prisman";
-import prisma from "../lib/prisma";
+import {prisma} from "../lib/prisma";
 import { cloudinaryUpload } from "../utils/cloudinary";
 import { createCustomError } from "../utils/customError";
 
@@ -199,16 +199,49 @@ export const transactionService = {
   },
 
   async expireUnpaidOrders() {
-    return prisma.order.updateMany({
-      where: { status: ORDER_STATUS.Menunggu_Pembayaran, expiresAt: { lt: new Date() } },
-      data: { status: ORDER_STATUS.Dibatalkan },
+    const expiredOrders = await prisma.order.findMany({
+      where: {
+        status: ORDER_STATUS.Menunggu_Pembayaran,
+        expiresAt: {
+          lt: new Date(),
+        },
+      },
     });
+
+    for (const order of expiredOrders) {
+      await prisma.order.update({
+        where: {
+          id: order.id,
+        },
+        data: {
+          status: ORDER_STATUS.Dibatalkan,
+          expiresAt: null,
+          paymentLogs: {
+            create: {
+              status: PAYMENT_STATUS.Pembayaran_Ditolak,
+              note:
+                "Booking otomatis dibatalkan karena melewati batas waktu pembayaran.",
+            },
+          },
+        },
+      });
+    }
+
+    return expiredOrders.length;
   },
 
   async completeFinishedOrders() {
-    return prisma.order.updateMany({
+    const completedOrders = await prisma.order.findMany({
       where: { status: ORDER_STATUS.Dikonfirmasi, checkOut: { lte: startOfToday() } },
-      data: { status: ORDER_STATUS.Selesai },
     });
+
+    for (const order of completedOrders) {
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { status: ORDER_STATUS.Selesai },
+      });
+    }
+
+    return completedOrders.length;
   },
 };

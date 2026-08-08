@@ -1,10 +1,11 @@
 generator client {
   provider = "prisma-client-js"
-  output = "../src/generated/prisman"
+  output   = "../src/generated/prisman"
 }
 
 datasource db {
   provider = "postgresql"
+  schemas  = ["property_renting_web", "public"]
 }
 
 model User {
@@ -26,6 +27,7 @@ model User {
   tenants             Tenant?
 
   @@map("users")
+  @@schema("property_renting_web")
 }
 
 model Tenant {
@@ -37,6 +39,7 @@ model Tenant {
   user        User       @relation(fields: [userId], references: [id])
 
   @@map("tenants")
+  @@schema("property_renting_web")
 }
 
 model EmailToken {
@@ -48,6 +51,7 @@ model EmailToken {
   user      User      @relation(fields: [userId], references: [id])
 
   @@map("email_tokens")
+  @@schema("property_renting_web")
 }
 
 model PasswordResetToken {
@@ -59,6 +63,7 @@ model PasswordResetToken {
   user      User      @relation(fields: [userId], references: [id])
 
   @@map("password_reset_tokens")
+  @@schema("property_renting_web")
 }
 
 model PropertyCategory {
@@ -68,6 +73,7 @@ model PropertyCategory {
   properties Property[]
 
   @@map("property_categories")
+  @@schema("property_renting_web")
 }
 
 model Property {
@@ -84,11 +90,12 @@ model Property {
   updatedAt   DateTime         @updatedAt
   category    PropertyCategory @relation(fields: [categoryId], references: [id])
   tenant      Tenant           @relation(fields: [tenantId], references: [id])
+  images      PropertyImage[]
   reviews     Review[]
   rooms       Room[]
-  images      PropertyImage[]
 
   @@map("properties")
+  @@schema("property_renting_web")
 }
 
 model PropertyImage {
@@ -96,10 +103,10 @@ model PropertyImage {
   propertyId Int
   url        String
   property   Property @relation(fields: [propertyId], references: [id])
-  
-  @@map("property_images")
-}
 
+  @@map("property_images")
+  @@schema("property_renting_web")
+}
 
 model Room {
   id             Int                @id @default(autoincrement())
@@ -118,6 +125,7 @@ model Room {
   property       Property           @relation(fields: [propertyId], references: [id])
 
   @@map("rooms")
+  @@schema("property_renting_web")
 }
 
 model RoomAvailability {
@@ -128,6 +136,7 @@ model RoomAvailability {
   room        Room     @relation(fields: [roomId], references: [id])
 
   @@map("room_availabilities")
+  @@schema("property_renting_web")
 }
 
 model PeakSeasonRate {
@@ -143,26 +152,29 @@ model PeakSeasonRate {
 
   @@unique([roomId, startDate])
   @@map("peak_season_rates")
+  @@schema("property_renting_web")
 }
 
 model Order {
-  id           Int          @id @default(autoincrement())
-  userId       Int
-  roomId       Int
-  checkIn      DateTime
-  checkOut     DateTime
-  totalPrice   Float
-  status       ORDER_STATUS
-  paymentProof String?
-  expiresAt    DateTime?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  room         Room         @relation(fields: [roomId], references: [id])
-  user         User         @relation(fields: [userId], references: [id])
-  paymentLogs  PaymentLog[]
-  reviews      Review[]
+  id            Int          @id @default(autoincrement())
+  userId        Int
+  roomId        Int
+  checkIn       DateTime
+  checkOut      DateTime
+  totalPrice    Float
+  status        ORDER_STATUS
+  paymentProof  String?
+  expiresAt     DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  paymentMethod String?
+  room          Room         @relation(fields: [roomId], references: [id])
+  user          User         @relation(fields: [userId], references: [id])
+  paymentLogs   PaymentLog[]
+  reviews       Review[]
 
   @@map("orders")
+  @@schema("property_renting_web")
 }
 
 model PaymentLog {
@@ -174,6 +186,7 @@ model PaymentLog {
   order     Order          @relation(fields: [orderId], references: [id])
 
   @@map("payment_logs")
+  @@schema("property_renting_web")
 }
 
 model Review {
@@ -191,21 +204,28 @@ model Review {
   user       User     @relation(fields: [userId], references: [id])
 
   @@map("reviews")
+  @@schema("property_renting_web")
 }
 
 enum ROLE {
   TENANT
   USER
+
+  @@schema("property_renting_web")
 }
 
 enum ORDER_STATUS {
   Menunggu_Pembayaran
   Menunggu_Konfirmasi_Pembayaran
   Dibatalkan
+
+  @@schema("property_renting_web")
 }
 
 enum PAYMENT_STATUS {
   Pembayaran_Diterima
   Pembayaran_Ditolak
   Pembayaran_Dikembalikan
+
+  @@schema("property_renting_web")
 }
