@@ -128,7 +128,9 @@ export const PAYMENT_STATUS: typeof $Enums.PAYMENT_STATUS
  * Type-safe database client for TypeScript & Node.js
  * @example
  * ```
- * const prisma = new PrismaClient()
+ * const prisma = new PrismaClient({
+ *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
+ * })
  * // Fetch zero or more Users
  * const users = await prisma.user.findMany()
  * ```
@@ -149,7 +151,9 @@ export class PrismaClient<
    * Type-safe database client for TypeScript & Node.js
    * @example
    * ```
-   * const prisma = new PrismaClient()
+   * const prisma = new PrismaClient({
+   *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
+   * })
    * // Fetch zero or more Users
    * const users = await prisma.user.findMany()
    * ```
@@ -158,7 +162,7 @@ export class PrismaClient<
    * Read more in our [docs](https://pris.ly/d/client).
    */
 
-  constructor(optionsArg ?: Prisma.Subset<ClientOptions, Prisma.PrismaClientOptions>);
+  constructor(optionsArg ?: Prisma.PrismaClientConstructorArgs<ClientOptions>);
   $on<V extends U>(eventType: V, callback: (event: V extends 'query' ? Prisma.QueryEvent : Prisma.LogEvent) => void): PrismaClient;
 
   /**
@@ -229,9 +233,9 @@ export class PrismaClient<
    * ])
    * ```
    * 
-   * Read more in our [docs](https://www.prisma.io/docs/concepts/components/prisma-client/transactions).
+   * Read more in our [docs](https://www.prisma.io/docs/orm/prisma-client/queries/transactions).
    */
-  $transaction<P extends Prisma.PrismaPromise<any>[]>(arg: [...P], options?: { isolationLevel?: Prisma.TransactionIsolationLevel }): $Utils.JsPromise<runtime.Types.Utils.UnwrapTuple<P>>
+  $transaction<P extends Prisma.PrismaPromise<any>[]>(arg: [...P], options?: { maxWait?: number, timeout?: number, isolationLevel?: Prisma.TransactionIsolationLevel }): $Utils.JsPromise<runtime.Types.Utils.UnwrapTuple<P>>
 
   $transaction<R>(fn: (prisma: Omit<PrismaClient, runtime.ITXClientDenyList>) => $Utils.JsPromise<R>, options?: { maxWait?: number, timeout?: number, isolationLevel?: Prisma.TransactionIsolationLevel }): $Utils.JsPromise<R>
 
@@ -418,8 +422,8 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 7.4.0
-   * Query Engine version: ab56fe763f921d033a6c195e7ddeb3e255bdbb57
+   * Prisma Client JS version: 7.9.1
+   * Query Engine version: e922089b7d7502aff4249d5da3420f6fa55fc6ad
    */
   export type PrismaVersion = {
     client: string
@@ -554,6 +558,19 @@ export namespace Prisma {
   };
 
   /**
+   * Resolved type of the argument passed to the `PrismaClient` constructor.
+   *
+   * When called without a narrower options type (the common case), this resolves
+   * to `PrismaClientOptions` directly, which produces a clear TypeScript error
+   * message (`not assignable to parameter of type 'PrismaClientOptions'`) when
+   * the argument is missing or incomplete. When the user supplies a narrower
+   * options type (e.g. via a literal), it falls back to `Subset` to keep
+   * filtering out unknown properties.
+   */
+  export type PrismaClientConstructorArgs<Options extends PrismaClientOptions> =
+    [PrismaClientOptions] extends [Options] ? PrismaClientOptions : Subset<Options, PrismaClientOptions>;
+
+  /**
    * SelectSubset
    * @desc From `T` pick properties that exist in `U`. Simple version of Intersection.
    * Additionally, it validates, if both select and include are present. If the case, it errors.
@@ -585,7 +602,7 @@ export namespace Prisma {
   type XOR<T, U> =
     T extends object ?
     U extends object ?
-      (Without<T, U> & U) | (Without<U, T> & T)
+      ((Without<T, U> & U) | (Without<U, T> & T)) & object
     : U : T
 
 
@@ -1864,11 +1881,26 @@ export namespace Prisma {
       isolationLevel?: Prisma.TransactionIsolationLevel
     }
     /**
-     * Instance of a Driver Adapter, e.g., like one provided by `@prisma/adapter-planetscale`
+     * A driver adapter that PrismaClient uses to connect to your database, such as the ones provided by `@prisma/adapter-pg`, `@prisma/adapter-libsql`, `@prisma/adapter-planetscale`, etc.
+     * 
+     * A driver adapter is **required** unless you connect to your database through Prisma Accelerate (in which case use `accelerateUrl` instead).
+     * 
+     * Learn more: https://pris.ly/d/driver-adapters
+     * 
+     * @example
+     * ```ts
+     * import { PrismaPg } from '@prisma/adapter-pg'
+     * import { PrismaClient } from './generated/prisma/client'
+     * 
+     * const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
+     * const prisma = new PrismaClient({ adapter })
+     * ```
      */
     adapter?: runtime.SqlDriverAdapterFactory
     /**
-     * Prisma Accelerate URL allowing the client to connect through Accelerate instead of a direct database.
+     * The Prisma Accelerate connection URL. Use this option to connect to your database through Prisma Accelerate instead of using a driver adapter to connect directly.
+     * 
+     * Learn more: https://pris.ly/d/accelerate
      */
     accelerateUrl?: string
     /**
@@ -2117,15 +2149,15 @@ export namespace Prisma {
    */
 
   export type PropertyCountOutputType = {
+    images: number
     reviews: number
     rooms: number
-    images: number
   }
 
   export type PropertyCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    images?: boolean | PropertyCountOutputTypeCountImagesArgs
     reviews?: boolean | PropertyCountOutputTypeCountReviewsArgs
     rooms?: boolean | PropertyCountOutputTypeCountRoomsArgs
-    images?: boolean | PropertyCountOutputTypeCountImagesArgs
   }
 
   // Custom InputTypes
@@ -2142,6 +2174,13 @@ export namespace Prisma {
   /**
    * PropertyCountOutputType without action
    */
+  export type PropertyCountOutputTypeCountImagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PropertyImageWhereInput
+  }
+
+  /**
+   * PropertyCountOutputType without action
+   */
   export type PropertyCountOutputTypeCountReviewsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ReviewWhereInput
   }
@@ -2151,13 +2190,6 @@ export namespace Prisma {
    */
   export type PropertyCountOutputTypeCountRoomsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: RoomWhereInput
-  }
-
-  /**
-   * PropertyCountOutputType without action
-   */
-  export type PropertyCountOutputTypeCountImagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PropertyImageWhereInput
   }
 
 
@@ -3218,6 +3250,11 @@ export namespace Prisma {
      * Skip the first `n` Users.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Users.
+     */
     distinct?: UserScalarFieldEnum | UserScalarFieldEnum[]
   }
 
@@ -4414,6 +4451,11 @@ export namespace Prisma {
      * Skip the first `n` Tenants.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Tenants.
+     */
     distinct?: TenantScalarFieldEnum | TenantScalarFieldEnum[]
   }
 
@@ -5534,6 +5576,11 @@ export namespace Prisma {
      * Skip the first `n` EmailTokens.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of EmailTokens.
+     */
     distinct?: EmailTokenScalarFieldEnum | EmailTokenScalarFieldEnum[]
   }
 
@@ -6630,6 +6677,11 @@ export namespace Prisma {
      * Skip the first `n` PasswordResetTokens.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PasswordResetTokens.
+     */
     distinct?: PasswordResetTokenScalarFieldEnum | PasswordResetTokenScalarFieldEnum[]
   }
 
@@ -7692,6 +7744,11 @@ export namespace Prisma {
      * Skip the first `n` PropertyCategories.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PropertyCategories.
+     */
     distinct?: PropertyCategoryScalarFieldEnum | PropertyCategoryScalarFieldEnum[]
   }
 
@@ -8190,9 +8247,9 @@ export namespace Prisma {
     updatedAt?: boolean
     category?: boolean | PropertyCategoryDefaultArgs<ExtArgs>
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    images?: boolean | Property$imagesArgs<ExtArgs>
     reviews?: boolean | Property$reviewsArgs<ExtArgs>
     rooms?: boolean | Property$roomsArgs<ExtArgs>
-    images?: boolean | Property$imagesArgs<ExtArgs>
     _count?: boolean | PropertyCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["property"]>
 
@@ -8246,9 +8303,9 @@ export namespace Prisma {
   export type PropertyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     category?: boolean | PropertyCategoryDefaultArgs<ExtArgs>
     tenant?: boolean | TenantDefaultArgs<ExtArgs>
+    images?: boolean | Property$imagesArgs<ExtArgs>
     reviews?: boolean | Property$reviewsArgs<ExtArgs>
     rooms?: boolean | Property$roomsArgs<ExtArgs>
-    images?: boolean | Property$imagesArgs<ExtArgs>
     _count?: boolean | PropertyCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type PropertyIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8265,9 +8322,9 @@ export namespace Prisma {
     objects: {
       category: Prisma.$PropertyCategoryPayload<ExtArgs>
       tenant: Prisma.$TenantPayload<ExtArgs>
+      images: Prisma.$PropertyImagePayload<ExtArgs>[]
       reviews: Prisma.$ReviewPayload<ExtArgs>[]
       rooms: Prisma.$RoomPayload<ExtArgs>[]
-      images: Prisma.$PropertyImagePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -8677,9 +8734,9 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     category<T extends PropertyCategoryDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PropertyCategoryDefaultArgs<ExtArgs>>): Prisma__PropertyCategoryClient<$Result.GetResult<Prisma.$PropertyCategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     tenant<T extends TenantDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TenantDefaultArgs<ExtArgs>>): Prisma__TenantClient<$Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    images<T extends Property$imagesArgs<ExtArgs> = {}>(args?: Subset<T, Property$imagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertyImagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     reviews<T extends Property$reviewsArgs<ExtArgs> = {}>(args?: Subset<T, Property$reviewsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     rooms<T extends Property$roomsArgs<ExtArgs> = {}>(args?: Subset<T, Property$roomsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RoomPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    images<T extends Property$imagesArgs<ExtArgs> = {}>(args?: Subset<T, Property$imagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PropertyImagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -8916,6 +8973,11 @@ export namespace Prisma {
      * Skip the first `n` Properties.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Properties.
+     */
     distinct?: PropertyScalarFieldEnum | PropertyScalarFieldEnum[]
   }
 
@@ -9116,6 +9178,30 @@ export namespace Prisma {
   }
 
   /**
+   * Property.images
+   */
+  export type Property$imagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PropertyImage
+     */
+    select?: PropertyImageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PropertyImage
+     */
+    omit?: PropertyImageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PropertyImageInclude<ExtArgs> | null
+    where?: PropertyImageWhereInput
+    orderBy?: PropertyImageOrderByWithRelationInput | PropertyImageOrderByWithRelationInput[]
+    cursor?: PropertyImageWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PropertyImageScalarFieldEnum | PropertyImageScalarFieldEnum[]
+  }
+
+  /**
    * Property.reviews
    */
   export type Property$reviewsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9161,30 +9247,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: RoomScalarFieldEnum | RoomScalarFieldEnum[]
-  }
-
-  /**
-   * Property.images
-   */
-  export type Property$imagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PropertyImage
-     */
-    select?: PropertyImageSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PropertyImage
-     */
-    omit?: PropertyImageOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PropertyImageInclude<ExtArgs> | null
-    where?: PropertyImageWhereInput
-    orderBy?: PropertyImageOrderByWithRelationInput | PropertyImageOrderByWithRelationInput[]
-    cursor?: PropertyImageWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: PropertyImageScalarFieldEnum | PropertyImageScalarFieldEnum[]
   }
 
   /**
@@ -10058,6 +10120,11 @@ export namespace Prisma {
      * Skip the first `n` PropertyImages.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PropertyImages.
+     */
     distinct?: PropertyImageScalarFieldEnum | PropertyImageScalarFieldEnum[]
   }
 
@@ -11241,6 +11308,11 @@ export namespace Prisma {
      * Skip the first `n` Rooms.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Rooms.
+     */
     distinct?: RoomScalarFieldEnum | RoomScalarFieldEnum[]
   }
 
@@ -12396,6 +12468,11 @@ export namespace Prisma {
      * Skip the first `n` RoomAvailabilities.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of RoomAvailabilities.
+     */
     distinct?: RoomAvailabilityScalarFieldEnum | RoomAvailabilityScalarFieldEnum[]
   }
 
@@ -13535,6 +13612,11 @@ export namespace Prisma {
      * Skip the first `n` PeakSeasonRates.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PeakSeasonRates.
+     */
     distinct?: PeakSeasonRateScalarFieldEnum | PeakSeasonRateScalarFieldEnum[]
   }
 
@@ -13791,6 +13873,7 @@ export namespace Prisma {
     expiresAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
+    paymentMethod: string | null
   }
 
   export type OrderMaxAggregateOutputType = {
@@ -13805,6 +13888,7 @@ export namespace Prisma {
     expiresAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
+    paymentMethod: string | null
   }
 
   export type OrderCountAggregateOutputType = {
@@ -13819,6 +13903,7 @@ export namespace Prisma {
     expiresAt: number
     createdAt: number
     updatedAt: number
+    paymentMethod: number
     _all: number
   }
 
@@ -13849,6 +13934,7 @@ export namespace Prisma {
     expiresAt?: true
     createdAt?: true
     updatedAt?: true
+    paymentMethod?: true
   }
 
   export type OrderMaxAggregateInputType = {
@@ -13863,6 +13949,7 @@ export namespace Prisma {
     expiresAt?: true
     createdAt?: true
     updatedAt?: true
+    paymentMethod?: true
   }
 
   export type OrderCountAggregateInputType = {
@@ -13877,6 +13964,7 @@ export namespace Prisma {
     expiresAt?: true
     createdAt?: true
     updatedAt?: true
+    paymentMethod?: true
     _all?: true
   }
 
@@ -13978,6 +14066,7 @@ export namespace Prisma {
     expiresAt: Date | null
     createdAt: Date
     updatedAt: Date
+    paymentMethod: string | null
     _count: OrderCountAggregateOutputType | null
     _avg: OrderAvgAggregateOutputType | null
     _sum: OrderSumAggregateOutputType | null
@@ -14011,6 +14100,7 @@ export namespace Prisma {
     expiresAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    paymentMethod?: boolean
     room?: boolean | RoomDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
     paymentLogs?: boolean | Order$paymentLogsArgs<ExtArgs>
@@ -14030,6 +14120,7 @@ export namespace Prisma {
     expiresAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    paymentMethod?: boolean
     room?: boolean | RoomDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["order"]>
@@ -14046,6 +14137,7 @@ export namespace Prisma {
     expiresAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    paymentMethod?: boolean
     room?: boolean | RoomDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["order"]>
@@ -14062,9 +14154,10 @@ export namespace Prisma {
     expiresAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    paymentMethod?: boolean
   }
 
-  export type OrderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "roomId" | "checkIn" | "checkOut" | "totalPrice" | "status" | "paymentProof" | "expiresAt" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+  export type OrderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "roomId" | "checkIn" | "checkOut" | "totalPrice" | "status" | "paymentProof" | "expiresAt" | "createdAt" | "updatedAt" | "paymentMethod", ExtArgs["result"]["order"]>
   export type OrderInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     room?: boolean | RoomDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -14101,6 +14194,7 @@ export namespace Prisma {
       expiresAt: Date | null
       createdAt: Date
       updatedAt: Date
+      paymentMethod: string | null
     }, ExtArgs["result"]["order"]>
     composites: {}
   }
@@ -14539,6 +14633,7 @@ export namespace Prisma {
     readonly expiresAt: FieldRef<"Order", 'DateTime'>
     readonly createdAt: FieldRef<"Order", 'DateTime'>
     readonly updatedAt: FieldRef<"Order", 'DateTime'>
+    readonly paymentMethod: FieldRef<"Order", 'String'>
   }
     
 
@@ -14735,6 +14830,11 @@ export namespace Prisma {
      * Skip the first `n` Orders.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Orders.
+     */
     distinct?: OrderScalarFieldEnum | OrderScalarFieldEnum[]
   }
 
@@ -15879,6 +15979,11 @@ export namespace Prisma {
      * Skip the first `n` PaymentLogs.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PaymentLogs.
+     */
     distinct?: PaymentLogScalarFieldEnum | PaymentLogScalarFieldEnum[]
   }
 
@@ -17055,6 +17160,11 @@ export namespace Prisma {
      * Skip the first `n` Reviews.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Reviews.
+     */
     distinct?: ReviewScalarFieldEnum | ReviewScalarFieldEnum[]
   }
 
@@ -17422,7 +17532,8 @@ export namespace Prisma {
     paymentProof: 'paymentProof',
     expiresAt: 'expiresAt',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    paymentMethod: 'paymentMethod'
   };
 
   export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
@@ -17923,9 +18034,9 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Property"> | Date | string
     category?: XOR<PropertyCategoryScalarRelationFilter, PropertyCategoryWhereInput>
     tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
+    images?: PropertyImageListRelationFilter
     reviews?: ReviewListRelationFilter
     rooms?: RoomListRelationFilter
-    images?: PropertyImageListRelationFilter
   }
 
   export type PropertyOrderByWithRelationInput = {
@@ -17942,9 +18053,9 @@ export namespace Prisma {
     updatedAt?: SortOrder
     category?: PropertyCategoryOrderByWithRelationInput
     tenant?: TenantOrderByWithRelationInput
+    images?: PropertyImageOrderByRelationAggregateInput
     reviews?: ReviewOrderByRelationAggregateInput
     rooms?: RoomOrderByRelationAggregateInput
-    images?: PropertyImageOrderByRelationAggregateInput
   }
 
   export type PropertyWhereUniqueInput = Prisma.AtLeast<{
@@ -17964,9 +18075,9 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Property"> | Date | string
     category?: XOR<PropertyCategoryScalarRelationFilter, PropertyCategoryWhereInput>
     tenant?: XOR<TenantScalarRelationFilter, TenantWhereInput>
+    images?: PropertyImageListRelationFilter
     reviews?: ReviewListRelationFilter
     rooms?: RoomListRelationFilter
-    images?: PropertyImageListRelationFilter
   }, "id">
 
   export type PropertyOrderByWithAggregationInput = {
@@ -18283,6 +18394,7 @@ export namespace Prisma {
     expiresAt?: DateTimeNullableFilter<"Order"> | Date | string | null
     createdAt?: DateTimeFilter<"Order"> | Date | string
     updatedAt?: DateTimeFilter<"Order"> | Date | string
+    paymentMethod?: StringNullableFilter<"Order"> | string | null
     room?: XOR<RoomScalarRelationFilter, RoomWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     paymentLogs?: PaymentLogListRelationFilter
@@ -18301,6 +18413,7 @@ export namespace Prisma {
     expiresAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    paymentMethod?: SortOrderInput | SortOrder
     room?: RoomOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
     paymentLogs?: PaymentLogOrderByRelationAggregateInput
@@ -18322,6 +18435,7 @@ export namespace Prisma {
     expiresAt?: DateTimeNullableFilter<"Order"> | Date | string | null
     createdAt?: DateTimeFilter<"Order"> | Date | string
     updatedAt?: DateTimeFilter<"Order"> | Date | string
+    paymentMethod?: StringNullableFilter<"Order"> | string | null
     room?: XOR<RoomScalarRelationFilter, RoomWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     paymentLogs?: PaymentLogListRelationFilter
@@ -18340,6 +18454,7 @@ export namespace Prisma {
     expiresAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    paymentMethod?: SortOrderInput | SortOrder
     _count?: OrderCountOrderByAggregateInput
     _avg?: OrderAvgOrderByAggregateInput
     _max?: OrderMaxOrderByAggregateInput
@@ -18362,6 +18477,7 @@ export namespace Prisma {
     expiresAt?: DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Order"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Order"> | Date | string
+    paymentMethod?: StringNullableWithAggregatesFilter<"Order"> | string | null
   }
 
   export type PaymentLogWhereInput = {
@@ -18826,9 +18942,9 @@ export namespace Prisma {
     updatedAt?: Date | string
     category: PropertyCategoryCreateNestedOneWithoutPropertiesInput
     tenant: TenantCreateNestedOneWithoutPropertiesInput
+    images?: PropertyImageCreateNestedManyWithoutPropertyInput
     reviews?: ReviewCreateNestedManyWithoutPropertyInput
     rooms?: RoomCreateNestedManyWithoutPropertyInput
-    images?: PropertyImageCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateInput = {
@@ -18843,9 +18959,9 @@ export namespace Prisma {
     longitude: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    images?: PropertyImageUncheckedCreateNestedManyWithoutPropertyInput
     reviews?: ReviewUncheckedCreateNestedManyWithoutPropertyInput
     rooms?: RoomUncheckedCreateNestedManyWithoutPropertyInput
-    images?: PropertyImageUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUpdateInput = {
@@ -18859,9 +18975,9 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     category?: PropertyCategoryUpdateOneRequiredWithoutPropertiesNestedInput
     tenant?: TenantUpdateOneRequiredWithoutPropertiesNestedInput
+    images?: PropertyImageUpdateManyWithoutPropertyNestedInput
     reviews?: ReviewUpdateManyWithoutPropertyNestedInput
     rooms?: RoomUpdateManyWithoutPropertyNestedInput
-    images?: PropertyImageUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateInput = {
@@ -18876,9 +18992,9 @@ export namespace Prisma {
     longitude?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    images?: PropertyImageUncheckedUpdateManyWithoutPropertyNestedInput
     reviews?: ReviewUncheckedUpdateManyWithoutPropertyNestedInput
     rooms?: RoomUncheckedUpdateManyWithoutPropertyNestedInput
-    images?: PropertyImageUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyCreateManyInput = {
@@ -19184,6 +19300,7 @@ export namespace Prisma {
     expiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentMethod?: string | null
     room: RoomCreateNestedOneWithoutOrdersInput
     user: UserCreateNestedOneWithoutOrdersInput
     paymentLogs?: PaymentLogCreateNestedManyWithoutOrderInput
@@ -19202,6 +19319,7 @@ export namespace Prisma {
     expiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentMethod?: string | null
     paymentLogs?: PaymentLogUncheckedCreateNestedManyWithoutOrderInput
     reviews?: ReviewUncheckedCreateNestedManyWithoutOrderInput
   }
@@ -19215,6 +19333,7 @@ export namespace Prisma {
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     room?: RoomUpdateOneRequiredWithoutOrdersNestedInput
     user?: UserUpdateOneRequiredWithoutOrdersNestedInput
     paymentLogs?: PaymentLogUpdateManyWithoutOrderNestedInput
@@ -19233,6 +19352,7 @@ export namespace Prisma {
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paymentLogs?: PaymentLogUncheckedUpdateManyWithoutOrderNestedInput
     reviews?: ReviewUncheckedUpdateManyWithoutOrderNestedInput
   }
@@ -19249,6 +19369,7 @@ export namespace Prisma {
     expiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentMethod?: string | null
   }
 
   export type OrderUpdateManyMutationInput = {
@@ -19260,6 +19381,7 @@ export namespace Prisma {
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type OrderUncheckedUpdateManyInput = {
@@ -19274,6 +19396,7 @@ export namespace Prisma {
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type PaymentLogCreateInput = {
@@ -19840,23 +19963,23 @@ export namespace Prisma {
     isNot?: TenantWhereInput
   }
 
-  export type RoomListRelationFilter = {
-    every?: RoomWhereInput
-    some?: RoomWhereInput
-    none?: RoomWhereInput
-  }
-
   export type PropertyImageListRelationFilter = {
     every?: PropertyImageWhereInput
     some?: PropertyImageWhereInput
     none?: PropertyImageWhereInput
   }
 
-  export type RoomOrderByRelationAggregateInput = {
-    _count?: SortOrder
+  export type RoomListRelationFilter = {
+    every?: RoomWhereInput
+    some?: RoomWhereInput
+    none?: RoomWhereInput
   }
 
   export type PropertyImageOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type RoomOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -20155,6 +20278,7 @@ export namespace Prisma {
     expiresAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    paymentMethod?: SortOrder
   }
 
   export type OrderAvgOrderByAggregateInput = {
@@ -20176,6 +20300,7 @@ export namespace Prisma {
     expiresAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    paymentMethod?: SortOrder
   }
 
   export type OrderMinOrderByAggregateInput = {
@@ -20190,6 +20315,7 @@ export namespace Prisma {
     expiresAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    paymentMethod?: SortOrder
   }
 
   export type OrderSumOrderByAggregateInput = {
@@ -20687,6 +20813,13 @@ export namespace Prisma {
     connect?: TenantWhereUniqueInput
   }
 
+  export type PropertyImageCreateNestedManyWithoutPropertyInput = {
+    create?: XOR<PropertyImageCreateWithoutPropertyInput, PropertyImageUncheckedCreateWithoutPropertyInput> | PropertyImageCreateWithoutPropertyInput[] | PropertyImageUncheckedCreateWithoutPropertyInput[]
+    connectOrCreate?: PropertyImageCreateOrConnectWithoutPropertyInput | PropertyImageCreateOrConnectWithoutPropertyInput[]
+    createMany?: PropertyImageCreateManyPropertyInputEnvelope
+    connect?: PropertyImageWhereUniqueInput | PropertyImageWhereUniqueInput[]
+  }
+
   export type ReviewCreateNestedManyWithoutPropertyInput = {
     create?: XOR<ReviewCreateWithoutPropertyInput, ReviewUncheckedCreateWithoutPropertyInput> | ReviewCreateWithoutPropertyInput[] | ReviewUncheckedCreateWithoutPropertyInput[]
     connectOrCreate?: ReviewCreateOrConnectWithoutPropertyInput | ReviewCreateOrConnectWithoutPropertyInput[]
@@ -20701,7 +20834,7 @@ export namespace Prisma {
     connect?: RoomWhereUniqueInput | RoomWhereUniqueInput[]
   }
 
-  export type PropertyImageCreateNestedManyWithoutPropertyInput = {
+  export type PropertyImageUncheckedCreateNestedManyWithoutPropertyInput = {
     create?: XOR<PropertyImageCreateWithoutPropertyInput, PropertyImageUncheckedCreateWithoutPropertyInput> | PropertyImageCreateWithoutPropertyInput[] | PropertyImageUncheckedCreateWithoutPropertyInput[]
     connectOrCreate?: PropertyImageCreateOrConnectWithoutPropertyInput | PropertyImageCreateOrConnectWithoutPropertyInput[]
     createMany?: PropertyImageCreateManyPropertyInputEnvelope
@@ -20720,13 +20853,6 @@ export namespace Prisma {
     connectOrCreate?: RoomCreateOrConnectWithoutPropertyInput | RoomCreateOrConnectWithoutPropertyInput[]
     createMany?: RoomCreateManyPropertyInputEnvelope
     connect?: RoomWhereUniqueInput | RoomWhereUniqueInput[]
-  }
-
-  export type PropertyImageUncheckedCreateNestedManyWithoutPropertyInput = {
-    create?: XOR<PropertyImageCreateWithoutPropertyInput, PropertyImageUncheckedCreateWithoutPropertyInput> | PropertyImageCreateWithoutPropertyInput[] | PropertyImageUncheckedCreateWithoutPropertyInput[]
-    connectOrCreate?: PropertyImageCreateOrConnectWithoutPropertyInput | PropertyImageCreateOrConnectWithoutPropertyInput[]
-    createMany?: PropertyImageCreateManyPropertyInputEnvelope
-    connect?: PropertyImageWhereUniqueInput | PropertyImageWhereUniqueInput[]
   }
 
   export type FloatFieldUpdateOperationsInput = {
@@ -20751,6 +20877,20 @@ export namespace Prisma {
     upsert?: TenantUpsertWithoutPropertiesInput
     connect?: TenantWhereUniqueInput
     update?: XOR<XOR<TenantUpdateToOneWithWhereWithoutPropertiesInput, TenantUpdateWithoutPropertiesInput>, TenantUncheckedUpdateWithoutPropertiesInput>
+  }
+
+  export type PropertyImageUpdateManyWithoutPropertyNestedInput = {
+    create?: XOR<PropertyImageCreateWithoutPropertyInput, PropertyImageUncheckedCreateWithoutPropertyInput> | PropertyImageCreateWithoutPropertyInput[] | PropertyImageUncheckedCreateWithoutPropertyInput[]
+    connectOrCreate?: PropertyImageCreateOrConnectWithoutPropertyInput | PropertyImageCreateOrConnectWithoutPropertyInput[]
+    upsert?: PropertyImageUpsertWithWhereUniqueWithoutPropertyInput | PropertyImageUpsertWithWhereUniqueWithoutPropertyInput[]
+    createMany?: PropertyImageCreateManyPropertyInputEnvelope
+    set?: PropertyImageWhereUniqueInput | PropertyImageWhereUniqueInput[]
+    disconnect?: PropertyImageWhereUniqueInput | PropertyImageWhereUniqueInput[]
+    delete?: PropertyImageWhereUniqueInput | PropertyImageWhereUniqueInput[]
+    connect?: PropertyImageWhereUniqueInput | PropertyImageWhereUniqueInput[]
+    update?: PropertyImageUpdateWithWhereUniqueWithoutPropertyInput | PropertyImageUpdateWithWhereUniqueWithoutPropertyInput[]
+    updateMany?: PropertyImageUpdateManyWithWhereWithoutPropertyInput | PropertyImageUpdateManyWithWhereWithoutPropertyInput[]
+    deleteMany?: PropertyImageScalarWhereInput | PropertyImageScalarWhereInput[]
   }
 
   export type ReviewUpdateManyWithoutPropertyNestedInput = {
@@ -20781,7 +20921,7 @@ export namespace Prisma {
     deleteMany?: RoomScalarWhereInput | RoomScalarWhereInput[]
   }
 
-  export type PropertyImageUpdateManyWithoutPropertyNestedInput = {
+  export type PropertyImageUncheckedUpdateManyWithoutPropertyNestedInput = {
     create?: XOR<PropertyImageCreateWithoutPropertyInput, PropertyImageUncheckedCreateWithoutPropertyInput> | PropertyImageCreateWithoutPropertyInput[] | PropertyImageUncheckedCreateWithoutPropertyInput[]
     connectOrCreate?: PropertyImageCreateOrConnectWithoutPropertyInput | PropertyImageCreateOrConnectWithoutPropertyInput[]
     upsert?: PropertyImageUpsertWithWhereUniqueWithoutPropertyInput | PropertyImageUpsertWithWhereUniqueWithoutPropertyInput[]
@@ -20821,20 +20961,6 @@ export namespace Prisma {
     update?: RoomUpdateWithWhereUniqueWithoutPropertyInput | RoomUpdateWithWhereUniqueWithoutPropertyInput[]
     updateMany?: RoomUpdateManyWithWhereWithoutPropertyInput | RoomUpdateManyWithWhereWithoutPropertyInput[]
     deleteMany?: RoomScalarWhereInput | RoomScalarWhereInput[]
-  }
-
-  export type PropertyImageUncheckedUpdateManyWithoutPropertyNestedInput = {
-    create?: XOR<PropertyImageCreateWithoutPropertyInput, PropertyImageUncheckedCreateWithoutPropertyInput> | PropertyImageCreateWithoutPropertyInput[] | PropertyImageUncheckedCreateWithoutPropertyInput[]
-    connectOrCreate?: PropertyImageCreateOrConnectWithoutPropertyInput | PropertyImageCreateOrConnectWithoutPropertyInput[]
-    upsert?: PropertyImageUpsertWithWhereUniqueWithoutPropertyInput | PropertyImageUpsertWithWhereUniqueWithoutPropertyInput[]
-    createMany?: PropertyImageCreateManyPropertyInputEnvelope
-    set?: PropertyImageWhereUniqueInput | PropertyImageWhereUniqueInput[]
-    disconnect?: PropertyImageWhereUniqueInput | PropertyImageWhereUniqueInput[]
-    delete?: PropertyImageWhereUniqueInput | PropertyImageWhereUniqueInput[]
-    connect?: PropertyImageWhereUniqueInput | PropertyImageWhereUniqueInput[]
-    update?: PropertyImageUpdateWithWhereUniqueWithoutPropertyInput | PropertyImageUpdateWithWhereUniqueWithoutPropertyInput[]
-    updateMany?: PropertyImageUpdateManyWithWhereWithoutPropertyInput | PropertyImageUpdateManyWithWhereWithoutPropertyInput[]
-    deleteMany?: PropertyImageScalarWhereInput | PropertyImageScalarWhereInput[]
   }
 
   export type PropertyCreateNestedOneWithoutImagesInput = {
@@ -21468,6 +21594,7 @@ export namespace Prisma {
     expiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentMethod?: string | null
     room: RoomCreateNestedOneWithoutOrdersInput
     paymentLogs?: PaymentLogCreateNestedManyWithoutOrderInput
     reviews?: ReviewCreateNestedManyWithoutOrderInput
@@ -21484,6 +21611,7 @@ export namespace Prisma {
     expiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentMethod?: string | null
     paymentLogs?: PaymentLogUncheckedCreateNestedManyWithoutOrderInput
     reviews?: ReviewUncheckedCreateNestedManyWithoutOrderInput
   }
@@ -21628,6 +21756,7 @@ export namespace Prisma {
     expiresAt?: DateTimeNullableFilter<"Order"> | Date | string | null
     createdAt?: DateTimeFilter<"Order"> | Date | string
     updatedAt?: DateTimeFilter<"Order"> | Date | string
+    paymentMethod?: StringNullableFilter<"Order"> | string | null
   }
 
   export type PasswordResetTokenUpsertWithWhereUniqueWithoutUserInput = {
@@ -21722,9 +21851,9 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     category: PropertyCategoryCreateNestedOneWithoutPropertiesInput
+    images?: PropertyImageCreateNestedManyWithoutPropertyInput
     reviews?: ReviewCreateNestedManyWithoutPropertyInput
     rooms?: RoomCreateNestedManyWithoutPropertyInput
-    images?: PropertyImageCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutTenantInput = {
@@ -21738,9 +21867,9 @@ export namespace Prisma {
     longitude: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    images?: PropertyImageUncheckedCreateNestedManyWithoutPropertyInput
     reviews?: ReviewUncheckedCreateNestedManyWithoutPropertyInput
     rooms?: RoomUncheckedCreateNestedManyWithoutPropertyInput
-    images?: PropertyImageUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutTenantInput = {
@@ -22054,9 +22183,9 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     tenant: TenantCreateNestedOneWithoutPropertiesInput
+    images?: PropertyImageCreateNestedManyWithoutPropertyInput
     reviews?: ReviewCreateNestedManyWithoutPropertyInput
     rooms?: RoomCreateNestedManyWithoutPropertyInput
-    images?: PropertyImageCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutCategoryInput = {
@@ -22070,9 +22199,9 @@ export namespace Prisma {
     longitude: number
     createdAt?: Date | string
     updatedAt?: Date | string
+    images?: PropertyImageUncheckedCreateNestedManyWithoutPropertyInput
     reviews?: ReviewUncheckedCreateNestedManyWithoutPropertyInput
     rooms?: RoomUncheckedCreateNestedManyWithoutPropertyInput
-    images?: PropertyImageUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutCategoryInput = {
@@ -22133,6 +22262,25 @@ export namespace Prisma {
   export type TenantCreateOrConnectWithoutPropertiesInput = {
     where: TenantWhereUniqueInput
     create: XOR<TenantCreateWithoutPropertiesInput, TenantUncheckedCreateWithoutPropertiesInput>
+  }
+
+  export type PropertyImageCreateWithoutPropertyInput = {
+    url: string
+  }
+
+  export type PropertyImageUncheckedCreateWithoutPropertyInput = {
+    id?: number
+    url: string
+  }
+
+  export type PropertyImageCreateOrConnectWithoutPropertyInput = {
+    where: PropertyImageWhereUniqueInput
+    create: XOR<PropertyImageCreateWithoutPropertyInput, PropertyImageUncheckedCreateWithoutPropertyInput>
+  }
+
+  export type PropertyImageCreateManyPropertyInputEnvelope = {
+    data: PropertyImageCreateManyPropertyInput | PropertyImageCreateManyPropertyInput[]
+    skipDuplicates?: boolean
   }
 
   export type ReviewCreateWithoutPropertyInput = {
@@ -22205,25 +22353,6 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type PropertyImageCreateWithoutPropertyInput = {
-    url: string
-  }
-
-  export type PropertyImageUncheckedCreateWithoutPropertyInput = {
-    id?: number
-    url: string
-  }
-
-  export type PropertyImageCreateOrConnectWithoutPropertyInput = {
-    where: PropertyImageWhereUniqueInput
-    create: XOR<PropertyImageCreateWithoutPropertyInput, PropertyImageUncheckedCreateWithoutPropertyInput>
-  }
-
-  export type PropertyImageCreateManyPropertyInputEnvelope = {
-    data: PropertyImageCreateManyPropertyInput | PropertyImageCreateManyPropertyInput[]
-    skipDuplicates?: boolean
-  }
-
   export type PropertyCategoryUpsertWithoutPropertiesInput = {
     update: XOR<PropertyCategoryUpdateWithoutPropertiesInput, PropertyCategoryUncheckedUpdateWithoutPropertiesInput>
     create: XOR<PropertyCategoryCreateWithoutPropertiesInput, PropertyCategoryUncheckedCreateWithoutPropertiesInput>
@@ -22268,6 +22397,31 @@ export namespace Prisma {
     userId?: IntFieldUpdateOperationsInput | number
     companyName?: StringFieldUpdateOperationsInput | string
     phoneNumber?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type PropertyImageUpsertWithWhereUniqueWithoutPropertyInput = {
+    where: PropertyImageWhereUniqueInput
+    update: XOR<PropertyImageUpdateWithoutPropertyInput, PropertyImageUncheckedUpdateWithoutPropertyInput>
+    create: XOR<PropertyImageCreateWithoutPropertyInput, PropertyImageUncheckedCreateWithoutPropertyInput>
+  }
+
+  export type PropertyImageUpdateWithWhereUniqueWithoutPropertyInput = {
+    where: PropertyImageWhereUniqueInput
+    data: XOR<PropertyImageUpdateWithoutPropertyInput, PropertyImageUncheckedUpdateWithoutPropertyInput>
+  }
+
+  export type PropertyImageUpdateManyWithWhereWithoutPropertyInput = {
+    where: PropertyImageScalarWhereInput
+    data: XOR<PropertyImageUpdateManyMutationInput, PropertyImageUncheckedUpdateManyWithoutPropertyInput>
+  }
+
+  export type PropertyImageScalarWhereInput = {
+    AND?: PropertyImageScalarWhereInput | PropertyImageScalarWhereInput[]
+    OR?: PropertyImageScalarWhereInput[]
+    NOT?: PropertyImageScalarWhereInput | PropertyImageScalarWhereInput[]
+    id?: IntFilter<"PropertyImage"> | number
+    propertyId?: IntFilter<"PropertyImage"> | number
+    url?: StringFilter<"PropertyImage"> | string
   }
 
   export type ReviewUpsertWithWhereUniqueWithoutPropertyInput = {
@@ -22316,31 +22470,6 @@ export namespace Prisma {
     endDate?: DateTimeFilter<"Room"> | Date | string
     createdAt?: DateTimeFilter<"Room"> | Date | string
     updatedAt?: DateTimeFilter<"Room"> | Date | string
-  }
-
-  export type PropertyImageUpsertWithWhereUniqueWithoutPropertyInput = {
-    where: PropertyImageWhereUniqueInput
-    update: XOR<PropertyImageUpdateWithoutPropertyInput, PropertyImageUncheckedUpdateWithoutPropertyInput>
-    create: XOR<PropertyImageCreateWithoutPropertyInput, PropertyImageUncheckedCreateWithoutPropertyInput>
-  }
-
-  export type PropertyImageUpdateWithWhereUniqueWithoutPropertyInput = {
-    where: PropertyImageWhereUniqueInput
-    data: XOR<PropertyImageUpdateWithoutPropertyInput, PropertyImageUncheckedUpdateWithoutPropertyInput>
-  }
-
-  export type PropertyImageUpdateManyWithWhereWithoutPropertyInput = {
-    where: PropertyImageScalarWhereInput
-    data: XOR<PropertyImageUpdateManyMutationInput, PropertyImageUncheckedUpdateManyWithoutPropertyInput>
-  }
-
-  export type PropertyImageScalarWhereInput = {
-    AND?: PropertyImageScalarWhereInput | PropertyImageScalarWhereInput[]
-    OR?: PropertyImageScalarWhereInput[]
-    NOT?: PropertyImageScalarWhereInput | PropertyImageScalarWhereInput[]
-    id?: IntFilter<"PropertyImage"> | number
-    propertyId?: IntFilter<"PropertyImage"> | number
-    url?: StringFilter<"PropertyImage"> | string
   }
 
   export type PropertyCreateWithoutImagesInput = {
@@ -22430,6 +22559,7 @@ export namespace Prisma {
     expiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentMethod?: string | null
     user: UserCreateNestedOneWithoutOrdersInput
     paymentLogs?: PaymentLogCreateNestedManyWithoutOrderInput
     reviews?: ReviewCreateNestedManyWithoutOrderInput
@@ -22446,6 +22576,7 @@ export namespace Prisma {
     expiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentMethod?: string | null
     paymentLogs?: PaymentLogUncheckedCreateNestedManyWithoutOrderInput
     reviews?: ReviewUncheckedCreateNestedManyWithoutOrderInput
   }
@@ -22521,8 +22652,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     category: PropertyCategoryCreateNestedOneWithoutPropertiesInput
     tenant: TenantCreateNestedOneWithoutPropertiesInput
-    reviews?: ReviewCreateNestedManyWithoutPropertyInput
     images?: PropertyImageCreateNestedManyWithoutPropertyInput
+    reviews?: ReviewCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutRoomsInput = {
@@ -22537,8 +22668,8 @@ export namespace Prisma {
     longitude: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    reviews?: ReviewUncheckedCreateNestedManyWithoutPropertyInput
     images?: PropertyImageUncheckedCreateNestedManyWithoutPropertyInput
+    reviews?: ReviewUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutRoomsInput = {
@@ -22640,8 +22771,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     category?: PropertyCategoryUpdateOneRequiredWithoutPropertiesNestedInput
     tenant?: TenantUpdateOneRequiredWithoutPropertiesNestedInput
-    reviews?: ReviewUpdateManyWithoutPropertyNestedInput
     images?: PropertyImageUpdateManyWithoutPropertyNestedInput
+    reviews?: ReviewUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutRoomsInput = {
@@ -22656,8 +22787,8 @@ export namespace Prisma {
     longitude?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    reviews?: ReviewUncheckedUpdateManyWithoutPropertyNestedInput
     images?: PropertyImageUncheckedUpdateManyWithoutPropertyNestedInput
+    reviews?: ReviewUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
   export type RoomCreateWithoutAvailabilitiesInput = {
@@ -23074,6 +23205,7 @@ export namespace Prisma {
     expiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentMethod?: string | null
     room: RoomCreateNestedOneWithoutOrdersInput
     user: UserCreateNestedOneWithoutOrdersInput
     reviews?: ReviewCreateNestedManyWithoutOrderInput
@@ -23091,6 +23223,7 @@ export namespace Prisma {
     expiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentMethod?: string | null
     reviews?: ReviewUncheckedCreateNestedManyWithoutOrderInput
   }
 
@@ -23119,6 +23252,7 @@ export namespace Prisma {
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     room?: RoomUpdateOneRequiredWithoutOrdersNestedInput
     user?: UserUpdateOneRequiredWithoutOrdersNestedInput
     reviews?: ReviewUpdateManyWithoutOrderNestedInput
@@ -23136,6 +23270,7 @@ export namespace Prisma {
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     reviews?: ReviewUncheckedUpdateManyWithoutOrderNestedInput
   }
 
@@ -23148,6 +23283,7 @@ export namespace Prisma {
     expiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentMethod?: string | null
     room: RoomCreateNestedOneWithoutOrdersInput
     user: UserCreateNestedOneWithoutOrdersInput
     paymentLogs?: PaymentLogCreateNestedManyWithoutOrderInput
@@ -23165,6 +23301,7 @@ export namespace Prisma {
     expiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentMethod?: string | null
     paymentLogs?: PaymentLogUncheckedCreateNestedManyWithoutOrderInput
   }
 
@@ -23184,8 +23321,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     category: PropertyCategoryCreateNestedOneWithoutPropertiesInput
     tenant: TenantCreateNestedOneWithoutPropertiesInput
-    rooms?: RoomCreateNestedManyWithoutPropertyInput
     images?: PropertyImageCreateNestedManyWithoutPropertyInput
+    rooms?: RoomCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyUncheckedCreateWithoutReviewsInput = {
@@ -23200,8 +23337,8 @@ export namespace Prisma {
     longitude: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    rooms?: RoomUncheckedCreateNestedManyWithoutPropertyInput
     images?: PropertyImageUncheckedCreateNestedManyWithoutPropertyInput
+    rooms?: RoomUncheckedCreateNestedManyWithoutPropertyInput
   }
 
   export type PropertyCreateOrConnectWithoutReviewsInput = {
@@ -23269,6 +23406,7 @@ export namespace Prisma {
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     room?: RoomUpdateOneRequiredWithoutOrdersNestedInput
     user?: UserUpdateOneRequiredWithoutOrdersNestedInput
     paymentLogs?: PaymentLogUpdateManyWithoutOrderNestedInput
@@ -23286,6 +23424,7 @@ export namespace Prisma {
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paymentLogs?: PaymentLogUncheckedUpdateManyWithoutOrderNestedInput
   }
 
@@ -23311,8 +23450,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     category?: PropertyCategoryUpdateOneRequiredWithoutPropertiesNestedInput
     tenant?: TenantUpdateOneRequiredWithoutPropertiesNestedInput
-    rooms?: RoomUpdateManyWithoutPropertyNestedInput
     images?: PropertyImageUpdateManyWithoutPropertyNestedInput
+    rooms?: RoomUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutReviewsInput = {
@@ -23327,8 +23466,8 @@ export namespace Prisma {
     longitude?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    rooms?: RoomUncheckedUpdateManyWithoutPropertyNestedInput
     images?: PropertyImageUncheckedUpdateManyWithoutPropertyNestedInput
+    rooms?: RoomUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
   export type UserUpsertWithoutReviewsInput = {
@@ -23395,6 +23534,7 @@ export namespace Prisma {
     expiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentMethod?: string | null
   }
 
   export type PasswordResetTokenCreateManyUserInput = {
@@ -23444,6 +23584,7 @@ export namespace Prisma {
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     room?: RoomUpdateOneRequiredWithoutOrdersNestedInput
     paymentLogs?: PaymentLogUpdateManyWithoutOrderNestedInput
     reviews?: ReviewUpdateManyWithoutOrderNestedInput
@@ -23460,6 +23601,7 @@ export namespace Prisma {
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paymentLogs?: PaymentLogUncheckedUpdateManyWithoutOrderNestedInput
     reviews?: ReviewUncheckedUpdateManyWithoutOrderNestedInput
   }
@@ -23475,6 +23617,7 @@ export namespace Prisma {
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type PasswordResetTokenUpdateWithoutUserInput = {
@@ -23552,9 +23695,9 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     category?: PropertyCategoryUpdateOneRequiredWithoutPropertiesNestedInput
+    images?: PropertyImageUpdateManyWithoutPropertyNestedInput
     reviews?: ReviewUpdateManyWithoutPropertyNestedInput
     rooms?: RoomUpdateManyWithoutPropertyNestedInput
-    images?: PropertyImageUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutTenantInput = {
@@ -23568,9 +23711,9 @@ export namespace Prisma {
     longitude?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    images?: PropertyImageUncheckedUpdateManyWithoutPropertyNestedInput
     reviews?: ReviewUncheckedUpdateManyWithoutPropertyNestedInput
     rooms?: RoomUncheckedUpdateManyWithoutPropertyNestedInput
-    images?: PropertyImageUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateManyWithoutTenantInput = {
@@ -23609,9 +23752,9 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tenant?: TenantUpdateOneRequiredWithoutPropertiesNestedInput
+    images?: PropertyImageUpdateManyWithoutPropertyNestedInput
     reviews?: ReviewUpdateManyWithoutPropertyNestedInput
     rooms?: RoomUpdateManyWithoutPropertyNestedInput
-    images?: PropertyImageUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateWithoutCategoryInput = {
@@ -23625,9 +23768,9 @@ export namespace Prisma {
     longitude?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    images?: PropertyImageUncheckedUpdateManyWithoutPropertyNestedInput
     reviews?: ReviewUncheckedUpdateManyWithoutPropertyNestedInput
     rooms?: RoomUncheckedUpdateManyWithoutPropertyNestedInput
-    images?: PropertyImageUncheckedUpdateManyWithoutPropertyNestedInput
   }
 
   export type PropertyUncheckedUpdateManyWithoutCategoryInput = {
@@ -23641,6 +23784,11 @@ export namespace Prisma {
     longitude?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PropertyImageCreateManyPropertyInput = {
+    id?: number
+    url: string
   }
 
   export type ReviewCreateManyPropertyInput = {
@@ -23666,9 +23814,18 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type PropertyImageCreateManyPropertyInput = {
-    id?: number
-    url: string
+  export type PropertyImageUpdateWithoutPropertyInput = {
+    url?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type PropertyImageUncheckedUpdateWithoutPropertyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    url?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type PropertyImageUncheckedUpdateManyWithoutPropertyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    url?: StringFieldUpdateOperationsInput | string
   }
 
   export type ReviewUpdateWithoutPropertyInput = {
@@ -23744,20 +23901,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type PropertyImageUpdateWithoutPropertyInput = {
-    url?: StringFieldUpdateOperationsInput | string
-  }
-
-  export type PropertyImageUncheckedUpdateWithoutPropertyInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    url?: StringFieldUpdateOperationsInput | string
-  }
-
-  export type PropertyImageUncheckedUpdateManyWithoutPropertyInput = {
-    id?: IntFieldUpdateOperationsInput | number
-    url?: StringFieldUpdateOperationsInput | string
-  }
-
   export type OrderCreateManyRoomInput = {
     id?: number
     userId: number
@@ -23769,6 +23912,7 @@ export namespace Prisma {
     expiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    paymentMethod?: string | null
   }
 
   export type PeakSeasonRateCreateManyRoomInput = {
@@ -23796,6 +23940,7 @@ export namespace Prisma {
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     user?: UserUpdateOneRequiredWithoutOrdersNestedInput
     paymentLogs?: PaymentLogUpdateManyWithoutOrderNestedInput
     reviews?: ReviewUpdateManyWithoutOrderNestedInput
@@ -23812,6 +23957,7 @@ export namespace Prisma {
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
     paymentLogs?: PaymentLogUncheckedUpdateManyWithoutOrderNestedInput
     reviews?: ReviewUncheckedUpdateManyWithoutOrderNestedInput
   }
@@ -23827,6 +23973,7 @@ export namespace Prisma {
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    paymentMethod?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type PeakSeasonRateUpdateWithoutRoomInput = {
