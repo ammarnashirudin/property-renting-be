@@ -1,4 +1,4 @@
-import prisma from "../lib/prisma";
+import {prisma} from "../lib/prisma";
 
 export const propertyCatalogRepository = {
   findMany({ where, skip, take, orderBy, latitude, longitude }: any) {
