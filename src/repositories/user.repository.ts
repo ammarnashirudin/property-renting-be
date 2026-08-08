@@ -1,5 +1,4 @@
-import prisma from "../lib/prisma";
-import { create } from "node:domain";
+import {prisma} from "../lib/prisma";
 
 export const userRepository = {
     findByEmail(email: string){
