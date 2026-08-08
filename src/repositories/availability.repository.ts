@@ -1,4 +1,4 @@
-import prisma from "../lib/prisma";
+import {prisma} from "../lib/prisma";
 
 export const availabilityRepository = {
   set: async (roomId: number, date: Date, isAvailable: boolean) => {

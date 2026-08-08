@@ -1,4 +1,4 @@
-import prisma from "../lib/prisma";
+import {prisma} from "../lib/prisma";
 
 export const propertyManagementRepository = {
   create: (payload: any) => prisma.property.create({ data: payload }),
